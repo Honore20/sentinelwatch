@@ -4,14 +4,17 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Création du moteur SQLAlchemy
+connect_args = {}
+if "render.com" in settings.database_url:
+    connect_args = {"sslmode": "require"}
+
 engine = create_engine(
     settings.database_url,
-    pool_pre_ping=True,      # Vérifie la connexion avant chaque requête
-    pool_size=10,            # Connexions simultanées max
-    max_overflow=20,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    connect_args=connect_args,
 )
-
 # Factory de sessions
 SessionLocal = sessionmaker(
     autocommit=False,
