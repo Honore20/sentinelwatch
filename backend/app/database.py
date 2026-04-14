@@ -4,12 +4,11 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Render PostgreSQL : on s'assure que sslmode=require est dans l'URL
+# Render PostgreSQL requiert SSL — on l'ajoute à l'URL si absent
 database_url = settings.database_url
 if "render.com" in database_url and "sslmode" not in database_url:
     database_url += "?sslmode=require"
 
-# psycopg2 gère SSL via l'URL — pas via connect_args
 engine = create_engine(
     database_url,
     pool_pre_ping=True,
