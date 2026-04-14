@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.config import get_settings
-from app.routers import auth
+from app.routers import auth, events, websocket
 
 settings = get_settings()
 
@@ -16,14 +16,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],  # Demo : on autorise tout. En prod : restreindre.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Enregistrement des routers
 app.include_router(auth.router)
+app.include_router(events.router)
+app.include_router(websocket.router)
 
 
 @app.get("/", tags=["Health"])
