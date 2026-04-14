@@ -4,8 +4,10 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Render PostgreSQL requiert SSL — on l'ajoute à l'URL si absent
 database_url = settings.database_url
+
+# Si c'est l'URL externe Render → SSL obligatoire
+# Si c'est l'URL interne ou locale → pas besoin de SSL
 if "render.com" in database_url and "sslmode" not in database_url:
     database_url += "?sslmode=require"
 
@@ -14,13 +16,10 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_size=5,
     max_overflow=10,
+    pool_recycle=300,   # Recycle les connexions toutes les 5 min (évite timeouts)
 )
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
