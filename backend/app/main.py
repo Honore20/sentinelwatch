@@ -17,7 +17,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Demo : on autorise tout. En prod : restreindre.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,30 +38,32 @@ def health_check():
 @app.post("/api/test-attack", tags=["Testing"])
 def test_attack(ip: str = "203.45.67.89", attempts: int = 5):
     """
-    Endpoint de test : génère un événement d'attaque fictif
-    Utile pour tester le dashboard en live
+    Endpoint de test : génère des événements d'attaque fictifs
     """
     db = SessionLocal()
     try:
-        event = Event(
-            event_type="ssh_bruteforce",
-            source_ip=ip,
-            port=22,
-            protocol="SSH",
-            description=f"Test attack: {attempts} failed login attempts from {ip}",
-            severity="CRITICAL" if attempts > 5 else "HIGH",
-            timestamp=datetime.utcnow(),
-            metadata={"attempts": attempts, "test": True}
-        )
-        db.add(event)
+        events_created = []
+        for i in range(attempts):
+            event = Event(
+                timestamp=datetime.utcnow(),
+                source_ip=ip,
+                username=f"admin_attempt_{i}",
+                event_type="FAILED",
+                raw_log=f"Test attack attempt {i+1} from {ip}"
+            )
+            db.add(event)
+            events_created.append(event)
+        
         db.commit()
-        db.refresh(event)
+        
         return {
             "status": "created",
-            "event_id": event.id,
             "ip": ip,
             "attempts": attempts,
-            "severity": event.severity
+            "events_created": len(events_created)
         }
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "detail": str(e)}
     finally:
         db.close()
