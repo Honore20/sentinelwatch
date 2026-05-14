@@ -16,19 +16,17 @@ if is_render_postgres and "sslmode" not in database_url:
 
 # Configuration du moteur selon le type de DB
 if is_sqlite:
-    # SQLite : args spécifiques + pas de pool
     engine = create_engine(
         database_url,
         connect_args={"check_same_thread": False},
     )
 else:
-    # PostgreSQL : pool de connexions classique
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
         pool_size=5,
         max_overflow=10,
-        pool_recycle=300,   # Recycle les connexions toutes les 5 min (évite timeouts)
+        pool_recycle=300,
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
