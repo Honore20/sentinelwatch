@@ -183,6 +183,28 @@ sentinelwatch/
 └── docker-compose.yml
 
 ---
+## 🛠️ Migration d'architecture (mai 2026)
+
+**Refonte de la couche persistance : PostgreSQL → SQLite + détection automatique**
+
+Suite à l'expiration de la base PostgreSQL Render hébergée en mode trial, j'ai refondu la couche persistance pour :
+- Supprimer la dépendance externe payante
+- Réduire la complexité d'infrastructure
+- Garantir un déploiement zéro-coût pérenne
+
+Le code reste **compatible PostgreSQL** via détection automatique du driver, ce qui permet un retour en arrière instantané pour une montée en charge en production réelle :
+
+```python
+is_sqlite = database_url.startswith("sqlite")
+if is_sqlite:
+    engine = create_engine(database_url, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(database_url, pool_pre_ping=True, pool_size=5, ...)
+```
+
+Un endpoint `/api/seed-demo` permet désormais de générer un jeu de données réaliste à la demande pour la présentation du projet.
+
+**Identifiants démo** : `demo` / `DemoSentinel2026!`
 
 ## 👨‍💻 Auteur
 
