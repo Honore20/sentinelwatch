@@ -16,3 +16,8 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+# SQLite local
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-wal
+backend/data/*.db-shm
