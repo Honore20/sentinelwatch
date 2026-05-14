@@ -41,9 +41,9 @@ def seed_demo_user():
             )
             db.add(demo_user)
             db.commit()
-            print("✅ Compte démo créé : demo / DemoSentinel2026!")
+            print("Compte demo cree : demo / DemoSentinel2026!")
     except Exception as e:
-        print(f"⚠️ Erreur lors de la création du compte démo : {e}")
+        print(f"Erreur lors de la creation du compte demo : {e}")
         db.rollback()
     finally:
         db.close()
@@ -55,7 +55,7 @@ seed_demo_user()
 
 app = FastAPI(
     title="SentinelWatch API",
-    description="Mini-SOC : détection et réponse aux attaques SSH brute-force",
+    description="Mini-SOC : detection et reponse aux attaques SSH brute-force",
     version="1.0.0",
 )
 
@@ -90,7 +90,7 @@ def health_check():
 @app.post("/api/test-attack", tags=["Testing"])
 def test_attack(ip: str = "203.45.67.89", attempts: int = 5):
     """
-    Endpoint de test : génère des événements d'attaque fictifs
+    Endpoint de test : genere des evenements d'attaque fictifs
     """
     db = SessionLocal()
     try:
@@ -124,12 +124,11 @@ def test_attack(ip: str = "203.45.67.89", attempts: int = 5):
 @app.post("/api/seed-demo", tags=["Testing"])
 def seed_demo_data():
     """
-    Endpoint de démo : génère un jeu de données réaliste pour visualiser le dashboard.
-    Idéal pour présenter SentinelWatch à un recruteur sans devoir lancer le worker.
+    Endpoint de demo : genere un jeu de donnees realiste pour visualiser le dashboard.
+    Ideal pour presenter SentinelWatch a un recruteur sans devoir lancer le worker.
     """
     db = SessionLocal()
     try:
-        # Vérifier si des données existent déjà
         existing = db.query(Event).count()
         if existing > 50:
             return {
@@ -137,7 +136,7 @@ def seed_demo_data():
                 "detail": f"Database already contains {existing} events. Skipping seed.",
             }
         
-        # Scénario 1 : Attaque brute-force depuis 203.45.67.89 (déclenche alerte)
+        # Scenario 1 : Attaque brute-force (declenche alerte)
         attack_ip = "203.45.67.89"
         base_time = datetime.utcnow() - timedelta(minutes=5)
         for i in range(8):
@@ -150,7 +149,7 @@ def seed_demo_data():
             )
             db.add(event)
         
-        # Scénario 2 : Connexions légitimes (mélange réaliste)
+        # Scenario 2 : Connexions legitimes
         legit_ips = ["10.0.0.15", "10.0.0.22", "192.168.1.45"]
         for i in range(15):
             event = Event(
@@ -162,7 +161,7 @@ def seed_demo_data():
             )
             db.add(event)
         
-        # Scénario 3 : Attaque furtive (sous le seuil de détection)
+        # Scenario 3 : Attaque furtive
         stealth_ip = "45.67.89.12"
         for i in range(3):
             event = Event(
@@ -183,7 +182,7 @@ def seed_demo_data():
                 "legit_connections": "15 events from 3 IPs",
                 "stealth_attempts": "45.67.89.12 (3 events under threshold)",
             },
-            "tip": "Ouvre le dashboard et observe le flux en temps réel via /ws",
+            "tip": "Ouvre le dashboard et observe le flux en temps reel via /ws",
         }
     except Exception as e:
         db.rollback()
