@@ -4,14 +4,54 @@ from app.database import engine, Base, SessionLocal
 from app.config import get_settings
 from app.routers import auth, events, websocket
 from app.models.event import Event
+from app.models.user import User
 from datetime import datetime, timedelta
+from passlib.context import CryptContext
 import random
+import os
 
 settings = get_settings()
+
+# Créer le dossier data/ s'il n'existe pas (pour SQLite)
+if settings.database_url.startswith("sqlite"):
+    os.makedirs("./data", exist_ok=True)
 
 # Création automatique des tables au démarrage
 # Compatible PostgreSQL ET SQLite
 Base.metadata.create_all(bind=engine)
+
+# Context pour hasher les mots de passe (compatible avec ton auth)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def seed_demo_user():
+    """
+    Crée automatiquement un compte démo si la table users est vide.
+    Permet à n'importe quel recruteur de se connecter directement.
+    """
+    db = SessionLocal()
+    try:
+        if not db.query(User).first():
+            demo_user = User(
+                username="demo",
+                email="demo@sentinelwatch.fr",
+                hashed_password=pwd_context.hash("DemoSentinel2026!"),
+                is_active=True,
+                is_admin=False,
+            )
+            db.add(demo_user)
+            db.commit()
+            print("✅ Compte démo créé : demo / DemoSentinel2026!")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la création du compte démo : {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
+# Seed le compte démo au démarrage
+seed_demo_user()
+
 
 app = FastAPI(
     title="SentinelWatch API",
@@ -84,8 +124,8 @@ def test_attack(ip: str = "203.45.67.89", attempts: int = 5):
 @app.post("/api/seed-demo", tags=["Testing"])
 def seed_demo_data():
     """
-    Endpoint de démo : génère un jeu de données réaliste pour visualiser le dashboard
-    Idéal pour présenter SentinelWatch à un recruteur sans devoir lancer le worker
+    Endpoint de démo : génère un jeu de données réaliste pour visualiser le dashboard.
+    Idéal pour présenter SentinelWatch à un recruteur sans devoir lancer le worker.
     """
     db = SessionLocal()
     try:
@@ -117,7 +157,7 @@ def seed_demo_data():
                 timestamp=datetime.utcnow() - timedelta(minutes=random.randint(1, 30)),
                 source_ip=random.choice(legit_ips),
                 username=random.choice(["honore", "analyste", "admin"]),
-                event_type=random.choice(["OK", "OK", "OK", "FAILED"]),  # majorité OK
+                event_type=random.choice(["OK", "OK", "OK", "FAILED"]),
                 raw_log="sshd: Accepted publickey",
             )
             db.add(event)
