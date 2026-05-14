@@ -3,18 +3,18 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Base de données
-    database_url: str
-
+    # Base de données — défaut SQLite pour démarrer sans config externe
+    database_url: str = "sqlite:///./data/sentinelwatch.db"
+    
     # JWT
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
-
+    
     # App
     environment: str = "development"
     log_level: str = "INFO"
-
+    
     class Config:
         env_file = ".env"
         case_sensitive = False
