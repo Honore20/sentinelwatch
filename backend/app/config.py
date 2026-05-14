@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Base de données — défaut SQLite pour démarrer sans config externe
+    # Base de données — défaut SQLite si non spécifié
     database_url: str = "sqlite:///./data/sentinelwatch.db"
     
     # JWT
